@@ -1,5 +1,4 @@
 from rest_framework import viewsets, mixins, filters
-from rest_framework.pagination import LimitOffsetPagination
 from django_filters.rest_framework import DjangoFilterBackend
 from django.shortcuts import get_object_or_404
 from posts.models import Post, Group
@@ -17,7 +16,7 @@ class PostViewSet(viewsets.ModelViewSet):
     queryset = Post.objects.select_related('author', 'group').all()
     serializer_class = PostSerializer
     permission_classes = [IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly]
-    pagination_class = LimitOffsetPagination
+    pagination_class = None  # Отключение пагинации
     filter_backends = [DjangoFilterBackend, filters.SearchFilter]
     filterset_fields = ['group']
     search_fields = ['text', 'author__username']
@@ -29,6 +28,7 @@ class PostViewSet(viewsets.ModelViewSet):
 class CommentViewSet(viewsets.ModelViewSet):
     serializer_class = CommentSerializer
     permission_classes = [IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly]
+    pagination_class = None  # Отключение пагинации
 
     def get_queryset(self):
         post = get_object_or_404(Post, pk=self.kwargs.get('post_id'))
@@ -45,7 +45,8 @@ class FollowViewSet(mixins.CreateModelMixin,
     serializer_class = FollowSerializer
     permission_classes = [IsAuthenticated]
     filter_backends = [filters.SearchFilter]
-    search_fields = ['=following__username']
+    search_fields = ['following__username']  # Поиск по частичному совпадению
+    pagination_class = None  # Отключение пагинации
 
     def get_queryset(self):
         return self.request.user.follower.select_related('following')
@@ -58,3 +59,4 @@ class GroupViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Group.objects.all()
     serializer_class = GroupSerializer
     permission_classes = [IsAuthenticatedOrReadOnly]
+    pagination_class = None  # Отключение пагинации
