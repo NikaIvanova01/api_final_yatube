@@ -13,11 +13,18 @@ from rest_framework.permissions import (
 )
 
 
+class OptionalLimitOffsetPagination(LimitOffsetPagination):
+    def paginate_queryset(self, queryset, request, view=None):
+        if 'limit' in request.query_params or 'offset' in request.query_params:
+            return super().paginate_queryset(queryset, request, view)
+        return None
+
+
 class PostViewSet(viewsets.ModelViewSet):
     queryset = Post.objects.select_related('author', 'group').all()
     serializer_class = PostSerializer
     permission_classes = [IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly]
-    pagination_class = LimitOffsetPagination
+    pagination_class = OptionalLimitOffsetPagination
     filter_backends = [DjangoFilterBackend, filters.SearchFilter]
     filterset_fields = ['group']
     search_fields = ['text', 'author__username']
