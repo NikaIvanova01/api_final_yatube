@@ -1,5 +1,6 @@
 from rest_framework import viewsets, mixins, filters
 from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework.pagination import LimitOffsetPagination
 from django.shortcuts import get_object_or_404
 from posts.models import Post, Group
 from .serializers import (
@@ -16,7 +17,7 @@ class PostViewSet(viewsets.ModelViewSet):
     queryset = Post.objects.select_related('author', 'group').all()
     serializer_class = PostSerializer
     permission_classes = [IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly]
-    pagination_class = None  # Отключение пагинации
+    pagination_class = LimitOffsetPagination
     filter_backends = [DjangoFilterBackend, filters.SearchFilter]
     filterset_fields = ['group']
     search_fields = ['text', 'author__username']
